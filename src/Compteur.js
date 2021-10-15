@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function useIncrement(initialValue = 0, step = 1) {
   const [count, setCount] = useState(initialValue);
@@ -11,21 +11,37 @@ function useIncrement(initialValue = 0, step = 1) {
 }
 
 function useToggle(initialValue = true) {
-const [value, setValue] = useState(initialValue);
-    const toggle = function () {
-        setValue(v=>!v);
-    }
-    return[value,toggle]
+  const [value, setValue] = useState(initialValue);
+  const toggle = function () {
+    setValue((v) => !v);
+  };
+  return [value, toggle];
+}
+
+function useAutoIncrement(initialValue = 0, step = 1) {
+  const [count, increment] = useIncrement(initialValue, step);
+
+  useEffect(function () {
+    const timer = window.setInterval(function () {
+      increment()
+    }, 1000);
+
+    return function () {
+      clearInterval(timer);
+    };
+  }, []);
+
+  return count;
 }
 
 function Compteur() {
-  const [count, increment] = useIncrement(10);
+  const count = useAutoIncrement(0, 10);
 
-  return <button onClick={increment}>Increment {count}</button>;
+  return <button>Increment {count}</button>;
 }
 
 function App2() {
-    const [compteurVisible, toggleCompteur]=useToggle(true)
+  const [compteurVisible, toggleCompteur] = useToggle(true);
   return (
     <div>
       Afficher le compteur{" "}
@@ -35,7 +51,7 @@ function App2() {
         checked={compteurVisible}
       />
       <br />
-          {compteurVisible && <Compteur />}
+      {compteurVisible && <Compteur />}
     </div>
   );
 }
